@@ -2,18 +2,22 @@ import java.awt.*
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
 
-
-fun main()
+fun createAndStartMainWindow()
 {
-    var frame = Frame()
+    val button = Button("Получить анекдот")
+    button.setBounds(0, 100, 400, 30)
 
-    val button = Button("WOWOOWOWOWWOOW!!")
-    button.setBounds(30, 100, 80, 30)
+    val frame = Frame()
     frame.add(button)
-    frame.setSize(300, 300)
-    frame.title = "Lol, it works"
+    frame.setSize(400, 300)
+    frame.title = "Анекдоты.ру, но не совсем .ру"
     frame.layout = null
     frame.isVisible = true
+
+    val label = Label("Тут могла бы быть Ваша реклама")
+    label.setBounds(0, 200, 400, 100)
+    label.alignment = Label.CENTER
+    frame.add(label)
 
     frame.addWindowListener(object : WindowAdapter()
     {
@@ -21,6 +25,10 @@ fun main()
         {
             frame.dispose()
         }
-    }
-    )
+    })
+}
+
+fun main()
+{
+    createAndStartMainWindow()
 }
