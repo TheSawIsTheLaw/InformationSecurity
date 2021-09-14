@@ -1,8 +1,14 @@
 import java.awt.Font
 import java.awt.event.ActionListener
+import java.io.BufferedReader
+import java.io.File
+import java.io.IOException
+import java.io.InputStreamReader
+import java.util.concurrent.TimeUnit
 import javax.swing.*
 import kotlin.random.Random
 
+const val licenseKey = ""
 
 val anecs = listOf(
     "<html>Штирлиц играл в карты и проигрался.<br>Но Штирлиц умел делать хорошую мину при плохой игре.<br>Когда Штирлиц покинул компанию, мина сработала.</html>",
@@ -45,13 +51,64 @@ fun createAndStartMainWindow()
     frame.title = "Анекдоты.ру, но не совсем .ру"
     frame.isVisible = true
     frame.add(panel)
-    button.addActionListener(ActionListener {
+    button.addActionListener {
         changeCurrentAnec(label)
-    })
+    }
 
+}
+
+fun getLinuxMotherBoardSerialNumber(): String
+{
+    val command = "dmidecode -s baseboard-serial-number"
+    var serialNumber = ""
+
+    try
+    {
+        val SerialNumberProcess = Runtime.getRuntime().exec(command)
+
+        val ISR = InputStreamReader(
+            SerialNumberProcess.inputStream
+        )
+        val br = BufferedReader(ISR)
+        serialNumber = br.readLine().trim { it <= ' ' }
+        SerialNumberProcess.waitFor()
+        br.close()
+    } catch (e: Exception)
+    {
+    }
+
+    return serialNumber
+}
+
+fun isLicenseVerified(): Boolean
+{
+    var answ = false
+
+    val gotSerial = getLinuxMotherBoardSerialNumber()
+    if (gotSerial == "")
+    {
+        println("Please, start program using sudo.")
+    }
+    else if (licenseKey == "")
+    {
+        println("Please, activate the program.")
+    }
+    if (licenseKey != gotSerial)
+    {
+        println("You've stole the program. Now i'm going to starve to death :(")
+    }
+    else
+    {
+        answ = true
+    }
+
+    return answ
 }
 
 fun main()
 {
-    createAndStartMainWindow()
+    if (isLicenseVerified())
+    {
+        createAndStartMainWindow()
+    }
 }
