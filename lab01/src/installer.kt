@@ -1,4 +1,3 @@
-import java.io.BufferedWriter
 import java.io.File
 import java.io.IOException
 import java.util.concurrent.TimeUnit
@@ -20,7 +19,7 @@ fun String.runCommand(workingDir: File): String
         return proc.inputStream.bufferedReader().readText()
     } catch (e: IOException)
     {
-        e.printStackTrace()
+        println("Cannot use the command.")
         return ""
     }
 }
@@ -46,8 +45,19 @@ fun prepareFileForCompilation() : Boolean
     return isSuccess
 }
 
+fun compileFile() : Boolean
+{
+    var isSuccess = true
+
+    "kotlinc anecdotes.kt linuxChecker.kt -include-runtime -d anecdotes.jar".runCommand(File("").absoluteFile)
+
+    return isSuccess
+}
+
 fun main()
 {
-    if (prepareFileForCompilation())
+    if (prepareFileForCompilation() && compileFile())
         println("Successfully installed!")
+    else
+        println("Installation failed :(")
 }

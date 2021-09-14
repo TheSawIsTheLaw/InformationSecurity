@@ -1,7 +1,9 @@
 import java.awt.Font
+import java.awt.event.WindowAdapter
+import java.awt.event.WindowEvent
 import javax.swing.*
 import kotlin.random.Random
-import getLinuxMotherBoardSerialNumber
+import kotlin.system.exitProcess
 
 val anecs = listOf(
     "<html>Штирлиц играл в карты и проигрался.<br>Но Штирлиц умел делать хорошую мину при плохой игре.<br>Когда Штирлиц покинул компанию, мина сработала.</html>",
@@ -47,6 +49,15 @@ fun createAndStartMainWindow()
     button.addActionListener {
         changeCurrentAnec(label)
     }
+
+
+    frame.addWindowListener(object : WindowAdapter()
+    {
+        override fun windowClosing(e: WindowEvent)
+        {
+            exitProcess(0)
+        }
+    })
 
 }
 
