@@ -1,10 +1,7 @@
 import java.awt.Font
-import java.io.BufferedReader
-import java.io.InputStreamReader
 import javax.swing.*
 import kotlin.random.Random
-
-const val licenseKey = ""
+import getLinuxMotherBoardSerialNumber
 
 val anecs = listOf(
     "<html>Штирлиц играл в карты и проигрался.<br>Но Штирлиц умел делать хорошую мину при плохой игре.<br>Когда Штирлиц покинул компанию, мина сработала.</html>",
@@ -53,29 +50,6 @@ fun createAndStartMainWindow()
 
 }
 
-fun getLinuxMotherBoardSerialNumber(): String
-{
-    val command = "dmidecode -s baseboard-serial-number"
-    var serialNumber = ""
-
-    try
-    {
-        val SerialNumberProcess = Runtime.getRuntime().exec(command)
-
-        val ISR = InputStreamReader(
-            SerialNumberProcess.inputStream
-        )
-        val br = BufferedReader(ISR)
-        serialNumber = br.readLine().trim { it <= ' ' }
-        SerialNumberProcess.waitFor()
-        br.close()
-    } catch (e: Exception)
-    {
-    }
-
-    return serialNumber
-}
-
 fun isLicenseVerified(): Boolean
 {
     var answ = false
@@ -89,7 +63,7 @@ fun isLicenseVerified(): Boolean
     {
         println("Please, activate the program.")
     }
-    if (licenseKey != gotSerial)
+    else if (licenseKey != gotSerial)
     {
         println("You've stole the program. Now i'm going to starve to death :(")
     }
