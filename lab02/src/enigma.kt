@@ -1,11 +1,38 @@
+import java.lang.Exception
 import kotlin.random.Random
 
-const val sizeOfRotorsTape = 1071 // Так как у нас тут Unicode, то будем тыркаться с лентами побольше)))
+class Reflector(randomizer: Random)
+{
+    var reflectivePairs = Array(sizeOfRotorsTape / 2) { _ -> Pair(' ', ' ') }
+
+    init
+    {
+        val listOfLetters = MutableList(sizeOfRotorsTape) { index: Int -> Char(index) }
+        listOfLetters.shuffle(randomizer)
+
+        for (i in listOfLetters.indices step 2)
+        {
+            reflectivePairs[i / 2] = Pair(listOfLetters[i], listOfLetters[i + 1])
+        }
+    }
+
+    fun printPairs()
+    {
+        reflectivePairs.forEach { print("$it ") }
+    }
+}
+
+var sizeOfRotorsTape = 20000 //1104 // Так как у нас тут Unicode, то будем тыркаться с лентами побольше)))
 // Есть добавить возможность кодировать сообщения на греческом!
 
-class Rotor
+class Rotor(randomizer: Random)
 {
-    var tape = Array(sizeOfRotorsTape) {index -> (index + 33).toChar()}
+    var tape = Array(sizeOfRotorsTape) { index -> index.toChar() }
+
+    init
+    {
+        tape.shuffle(randomizer)
+    }
 
     fun rotateRight()
     {
@@ -34,11 +61,17 @@ class Rotor
     }
 }
 
-const val numOfRotors = 4
-
-class EnigmaMachine()
+class EnigmaMachine(randomizer: Random)
 {
-    val listOfRotors = List(numOfRotors) { _ -> Rotor()}
+    val numOfRotors = 3
+    val numOfRotatesForOneRotor = sizeOfRotorsTape
+
+    private val listOfRotors = List(numOfRotors) { _ -> Rotor(randomizer) }
+    private val reflector = Reflector(randomizer)
+
+    // Для вращения роторов
+    private var rotatableRotorIndex = 0
+    private var currentRotates = 0
 
     fun printRotors()
     {
@@ -49,20 +82,124 @@ class EnigmaMachine()
         }
     }
 
-    fun randomAllRotors(seed: Int)
+    fun printReflector()
     {
-        val randomGenerator = Random(seed)
+        print("Reflector: ")
+        reflector.printPairs()
+    }
 
-        for (i in listOfRotors.indices)
+    fun printMachineProperties()
+    {
+        printRotors()
+        printReflector()
+    }
+
+    fun rotateRotor()
+    {
+        if (currentRotates < numOfRotatesForOneRotor)
         {
-            listOfRotors[i].tape.shuffle(randomGenerator)
+            currentRotates++
+        } else
+        {
+            currentRotates = 1
+            if (rotatableRotorIndex < numOfRotatesForOneRotor)
+            {
+                rotatableRotorIndex++
+            } else
+            {
+                rotatableRotorIndex = 0
+            }
         }
+
+        listOfRotors[rotatableRotorIndex].rotateRight()
+    }
+
+    @Throws(Exception::class)
+    fun encryptOrDecrypt(str: String): String
+    {
+        var outString = ""
+
+        var wayLetter: Char
+        for (letter in str)
+        {
+            // Прямой ход по роторам
+            wayLetter = letter
+            for (rotorIndex in listOfRotors.indices)
+            {
+                wayLetter = listOfRotors[rotorIndex].tape[wayLetter.code]
+            }
+
+            // Поиск рефлективной пары для замены
+            var currentReflectorIndex = 1
+            var checkPair = reflector.reflectivePairs[0]
+            while (
+                wayLetter != checkPair.first &&
+                wayLetter != checkPair.second &&
+                currentReflectorIndex < reflector.reflectivePairs.size
+            )
+            {
+                checkPair = reflector.reflectivePairs[currentReflectorIndex]
+                currentReflectorIndex++
+            }
+
+            // Определение замены на рефлекторе
+            wayLetter = when
+            {
+                currentReflectorIndex == reflector.reflectivePairs.size -> throw Exception("Passed unsupported symbol.")
+                wayLetter == checkPair.first                            -> checkPair.second
+                else                                                    -> checkPair.first
+            }
+
+            // Обратный ход по роторам
+            for (rotorIndex in numOfRotors - 1 downTo 0)
+            {
+                wayLetter = listOfRotors[rotorIndex].tape.indexOf(wayLetter).toChar()
+            }
+
+            outString += wayLetter
+
+            // Вращение нужного ротора
+            rotateRotor()
+        }
+
+        return outString
     }
 }
 
-fun main()
+fun main(args: Array<String>)
 {
-    val machine = EnigmaMachine()
-    machine.randomAllRotors(133)
-    machine.printRotors()
+//    if (args.size != 3 || args[0].toIntOrNull() == null || args[1].toIntOrNull() == null || args[1].toInt() > 143858)
+//    {
+//        println(
+//            "\u001B[35mNot enough arguments. There is a need for 2 arguments: " +
+//                    "seed (Int), number of unicode symbols to use (Int, <= 143 858), message to encrypt/decrypt\u001B[0m"
+//        )
+//
+//        return
+//    }
+
+    val seed = 133// args[0].toInt()
+    val numOfUsedUnicodeSymbols =  5000// args[1].toInt()
+    val toEndecrypt = "੬ᆿ፥ۢసహᅿ\u0FF7֤ࣧด࣪\u0EA4߈࣭ঢ়{ป၍8ቚେၹ<"// args[2]
+
+    sizeOfRotorsTape = numOfUsedUnicodeSymbols
+
+    val enigma = EnigmaMachine(Random(seed))
+
+
+    var endecrypted = ""
+    try
+    {
+        endecrypted = enigma.encryptOrDecrypt(toEndecrypt)
+    }
+    catch (e: Exception)
+    {
+        println()
+        println("\u001B[35m Some symbols are not supported. \u001B[0m")
+    }
+
+    println()
+    println("\u001B[32mResult:")
+    println(endecrypted)
+    print("\u001B[0m")
 }
