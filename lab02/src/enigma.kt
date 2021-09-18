@@ -30,6 +30,7 @@ class Rotor
     fun printTape()
     {
         tape.forEach { print("$it ") }
+        println()
     }
 }
 
@@ -41,7 +42,11 @@ class EnigmaMachine()
 
     fun printRotors()
     {
-        listOfRotors.forEach { it.printTape() }
+        for (i in listOfRotors.indices)
+        {
+            print("Rotor №$i: ")
+            listOfRotors[i].printTape()
+        }
     }
 
     fun randomAllRotors(seed: Int)
@@ -57,5 +62,7 @@ class EnigmaMachine()
 
 fun main()
 {
-    print("lox")
+    val machine = EnigmaMachine()
+    machine.randomAllRotors(133)
+    machine.printRotors()
 }
