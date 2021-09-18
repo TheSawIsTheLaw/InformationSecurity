@@ -1,9 +1,11 @@
-const val sizeOfRotorsTape = 1103 // Так как у нас тут Unicode, то будем тыркаться с лентами побольше)))
+import kotlin.random.Random
+
+const val sizeOfRotorsTape = 1071 // Так как у нас тут Unicode, то будем тыркаться с лентами побольше)))
 // Есть добавить возможность кодировать сообщения на греческом!
 
 class Rotor
 {
-    var tape = Array(sizeOfRotorsTape) { _ -> "" }
+    var tape = Array(sizeOfRotorsTape) {index -> (index + 33).toChar()}
 
     fun rotateRight()
     {
@@ -31,3 +33,29 @@ class Rotor
     }
 }
 
+const val numOfRotors = 4
+
+class EnigmaMachine()
+{
+    val listOfRotors = List(numOfRotors) { _ -> Rotor()}
+
+    fun printRotors()
+    {
+        listOfRotors.forEach { it.printTape() }
+    }
+
+    fun randomAllRotors(seed: Int)
+    {
+        val randomGenerator = Random(seed)
+
+        for (i in listOfRotors.indices)
+        {
+            listOfRotors[i].tape.shuffle(randomGenerator)
+        }
+    }
+}
+
+fun main()
+{
+    print("lox")
+}
