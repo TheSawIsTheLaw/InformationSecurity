@@ -44,7 +44,7 @@ class Rotor(randomizer: Random)
         tape[0] = temp
     }
 
-    fun rotateLeft()
+    private fun rotateLeft()
     {
         val temp = tape.first()
         for (i in 0 until tape.size - 1)
@@ -99,13 +99,15 @@ class EnigmaMachine(randomizer: Random)
         if (currentRotates < numOfRotatesForOneRotor)
         {
             currentRotates++
-        } else
+        }
+        else
         {
             currentRotates = 1
             if (rotatableRotorIndex < numOfRotatesForOneRotor)
             {
                 rotatableRotorIndex++
-            } else
+            }
+            else
             {
                 rotatableRotorIndex = 0
             }
@@ -166,6 +168,8 @@ class EnigmaMachine(randomizer: Random)
     }
 }
 
+const val numOfUsedUnicodeSymbols = 5000
+
 fun main(args: Array<String>)
 {
 //    if (args.size != 3 || args[0].toIntOrNull() == null || args[1].toIntOrNull() == null || args[1].toInt() > 143858)
@@ -179,20 +183,22 @@ fun main(args: Array<String>)
 //    }
 
     val seed = 133// args[0].toInt()
-    val numOfUsedUnicodeSymbols =  5000// args[1].toInt()
-    val toEndecrypt = "੬ᆿ፥ۢసహᅿ\u0FF7֤ࣧด࣪\u0EA4߈࣭ঢ়{ป၍8ቚେၹ<"// args[2]
+//    val numOfUsedUnicodeSymbols = args[1].toInt()
+    val toEndecrypt = "\u0C04֮ఆఇ̅ݷຝ\u0C3BݺৼቐݏݐҌһᄠ༤ރזေ͘\u008Fثᇵᇶ௺"// args[2]
 
+    if (numOfUsedUnicodeSymbols % 2 != 0)
+    {
+        throw Exception("Number of used unicode symbols is odd. But it should be even for the reflector.")
+    }
     sizeOfRotorsTape = numOfUsedUnicodeSymbols
 
     val enigma = EnigmaMachine(Random(seed))
-
 
     var endecrypted = ""
     try
     {
         endecrypted = enigma.encryptOrDecrypt(toEndecrypt)
-    }
-    catch (e: Exception)
+    } catch (e: Exception)
     {
         println()
         println("\u001B[35m Some symbols are not supported. \u001B[0m")
