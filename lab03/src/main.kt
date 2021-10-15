@@ -47,6 +47,6 @@ fun main(args: Array<String>)
             outInBytes.add(i)
         }
     }
-    println(outInBytes)
+
     createBinary(addToName + fileName, outInBytes)
 }

@@ -1,8 +1,5 @@
 package des
 
-import longToBytes
-
-
 // Add zeroes until 64 bits and add a number of added bytes
 fun prepareWorkBlocks(bytes: List<Byte>, mode: String): List<Long>
 {
@@ -20,8 +17,6 @@ fun prepareWorkBlocks(bytes: List<Byte>, mode: String): List<Long>
         }
         workBytes.add(addedZeroes)
     }
-
-    print(workBytes)
 
     val outBlocks = MutableList<Long>(workBytes.size / 8) { _ -> 0 }
 
@@ -189,9 +184,9 @@ fun substitutions(block: Long): Int
 
 fun feistelFunc(blockPart: Int, key48bit: Long): Int
 {
-    var blockExpandedTo48bit = expandTo48bit(blockPart) xor key48bit
+    val blockExpandedTo48bit = expandTo48bit(blockPart) xor key48bit
 
-    var newBlock32: Int = substitutions(blockExpandedTo48bit)
+    val newBlock32: Int = substitutions(blockExpandedTo48bit)
     var permutedBlock32: Int = 0
     for (i in 0 until 32)
     {
