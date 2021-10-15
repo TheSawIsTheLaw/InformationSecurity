@@ -1,5 +1,7 @@
 package des
 
+import longToBytes
+
 
 // Add zeroes until 64 bits and add a number of added bytes
 fun prepareWorkBlocks(bytes: List<Byte>, mode: String): List<Long>
@@ -71,16 +73,16 @@ fun formKeys(fKey: Int, sKey: Int): List<Long>
             else        -> 2
         }
 
-        curFKey = (curFKey shl currentShift) or ((curFKey shr (-currentShift and 27)) and ((1 shl 32) - 1))
-        curSKey = (curSKey shl currentShift) or ((curSKey shr (-currentShift and 27)) and ((1 shl 32) - 1))
+        curFKey = ((curFKey shl currentShift) or (curFKey shr (-currentShift and 27))) and ((1 shl 32) - 1)
+        curSKey = ((curSKey shl currentShift) or (curSKey shr (-currentShift and 27))) and ((1 shl 32) - 1)
 
-        val key56bit: Long = ((curFKey.toLong() shl 28) or curSKey.toLong()) shr 4
+        val key56bit: Long = ((curFKey.toLong() shl 28) or curSKey.toLong()) shl 4
 
         // compress
         var curKey48bit: Long = 0
         for (j in 0 until 48)
         {
-            curKey48bit = curKey48bit or ((key56bit shr 64 - DESTables.compressTable[j] and 0x01) shl 63 - j)
+            curKey48bit = curKey48bit or ((key56bit shr (64 - DESTables.compressTable[j]) and 0x01) shl (63 - j))
         }
         keys48bit[i] = curKey48bit
     }
