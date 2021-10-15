@@ -217,7 +217,7 @@ fun feistelDecipher(leftPart: Int, rightPart: Int, keys: List<Long>): Pair<Int, 
     return Pair(right, left)
 }
 
-fun doCipherOrDecipher(bytesToCipher: List<Byte>, key: List<Byte>, mode: String = "cipher"): List<Long>
+fun cipherOrDecipher(bytesToCipher: List<Byte>, key: List<Byte>, mode: String = "cipher"): List<Long>
 {
     if (key.size != 8)
     {
