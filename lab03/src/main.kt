@@ -1,28 +1,6 @@
-import java.io.DataInputStream
-import java.io.File
-import java.io.FileNotFoundException
+import fileOperations.getBinaryFilling
 
-fun getBinaryFilling(fileName: String): List<Byte>
-{
-    val stream: DataInputStream
-    try
-    {
-        stream = DataInputStream(File(fileName).inputStream())
-    }
-    catch (exception: FileNotFoundException)
-    {
-        println("File not found")
-        return listOf()
-    }
-
-    val outList = mutableListOf<Byte>()
-    while (stream.available() > 0)
-    {
-        outList.add(stream.readByte())
-    }
-
-    return outList.toList()
-}
+const val addToName: String = "wololo"
 
 fun main(args: Array<String>)
 {
@@ -32,7 +10,9 @@ fun main(args: Array<String>)
         return
     }
 
-    val fillingToCipher = getBinaryFilling(args[0])
+    val fileName = args[0]
+
+    val fillingToCipher = getBinaryFilling(fileName)
     if (fillingToCipher.isEmpty())
     {
         println("Nothing to cipher")
