@@ -2,18 +2,24 @@ package des
 
 
 // Add zeroes until 64 bits and add a number of added bytes
-fun prepareWorkBlocks(bytes: List<Byte>): List<Long>
+fun prepareWorkBlocks(bytes: List<Byte>, mode: String): List<Long>
 {
     val workBytes = bytes.toMutableList()
-    val addedZeroes: Byte = if (workBytes.size >= 8)
-        (workBytes.size % 8).toByte()
-    else
-        (8 - workBytes.size).toByte()
-    for (i in 0 until addedZeroes + 7)
+
+    if (mode == "cipher")
     {
-        workBytes.add(0)
+        val addedZeroes: Byte = if (workBytes.size >= 8)
+            (8 - workBytes.size % 8).toByte()
+        else
+            (8 - workBytes.size).toByte()
+        for (i in 0 until addedZeroes + 7)
+        {
+            workBytes.add(0)
+        }
+        workBytes.add(addedZeroes)
     }
-    workBytes.add(addedZeroes)
+
+    print(workBytes)
 
     val outBlocks = MutableList<Long>(workBytes.size / 8) { _ -> 0 }
 
@@ -24,7 +30,7 @@ fun prepareWorkBlocks(bytes: List<Byte>): List<Long>
     {
         outBlocks[curBlockNum] = (outBlocks[curBlockNum] shl 8) or workBytes[i].toLong()
         passedBytes++
-        if (passedBytes == 7)
+        if (passedBytes == 8)
         {
             passedBytes = 0
             curBlockNum++
@@ -52,8 +58,7 @@ fun formKeys(fKey: Int, sKey: Int): List<Long>
 {
     val keys48bit = MutableList<Long>(16) { _ -> 0 } // In Long we have 64 bits
 
-    var block56bit: Long = 0
-    var currentShift: Int = 0
+    var currentShift: Int
 
     var curFKey: Int = fKey
     var curSKey: Int = sKey
@@ -73,9 +78,9 @@ fun formKeys(fKey: Int, sKey: Int): List<Long>
 
         // compress
         var curKey48bit: Long = 0
-        for (i in 0 until 48)
+        for (j in 0 until 48)
         {
-            curKey48bit = curKey48bit or ((key56bit shr 64 - DESTables.compressTable[i] and 0x01) shl 63 - i)
+            curKey48bit = curKey48bit or ((key56bit shr 64 - DESTables.compressTable[j] and 0x01) shl 63 - j)
         }
         keys48bit[i] = curKey48bit
     }
@@ -224,7 +229,7 @@ fun cipherOrDecipher(bytesToCipher: List<Byte>, key: List<Byte>, mode: String = 
         throw InvalidKeyException("Key is invalid: we need 8 bytes in it")
     }
 
-    val workBlocks = prepareWorkBlocks(bytesToCipher)
+    val workBlocks = prepareWorkBlocks(bytesToCipher, mode)
 
     val keys48bit = expandKey(key)
 
@@ -245,5 +250,5 @@ fun cipherOrDecipher(bytesToCipher: List<Byte>, key: List<Byte>, mode: String = 
         outBlocks.add(makeFinalPermutationAndMakeBlock(outLeft, outRight))
     }
 
-    return workBlocks
+    return outBlocks
 }

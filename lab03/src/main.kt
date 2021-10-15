@@ -31,6 +31,7 @@ fun main(args: Array<String>)
         println("Nothing to cipher")
         return
     }
+
     val key = mutableListOf<Byte>()
     for (letter in args[1])
     {
@@ -46,5 +47,6 @@ fun main(args: Array<String>)
             outInBytes.add(i)
         }
     }
+    println(outInBytes)
     createBinary(addToName + fileName, outInBytes)
 }
