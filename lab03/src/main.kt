@@ -16,6 +16,19 @@ const val addToName: String = "wololo"
     return bytes
 }
 
+fun deleteLastZeroes(deleteFrom: List<UByte>): MutableList<UByte>
+{
+    val addedZeroes = deleteFrom.last()
+    println(addedZeroes)
+    val fixedList = deleteFrom.toMutableList()
+    for (i in 0..addedZeroes.toInt() + 7) // + 7, так как добавляется сверху блок с количеством нулей...
+    {
+        fixedList.removeLast()
+    }
+
+    return fixedList
+}
+
 @OptIn(ExperimentalUnsignedTypes::class) fun main(args: Array<String>)
 {
     if (args.size < 3 || args[1].length != 8)
@@ -45,8 +58,9 @@ const val addToName: String = "wololo"
         key.add(letter.code.toUByte())
     }
 
-    val out = cipherOrDecipher(fillingToCipher, key, args[2])
-    val outInBytes = mutableListOf<UByte>()
+    val mode = args[2]
+    val out = cipherOrDecipher(fillingToCipher, key, mode)
+    var outInBytes = mutableListOf<UByte>()
 
     out.forEach {
         for (i in uLongToByteArray(it))
@@ -54,7 +68,13 @@ const val addToName: String = "wololo"
             outInBytes.add(i)
         }
     }
-    println("Output: $outInBytes")
 
+    if (mode == "decipher")
+    {
+        println(outInBytes)
+        outInBytes = deleteLastZeroes(outInBytes)
+        println(outInBytes)
+    }
+    println("Output: $outInBytes")
     createBinary(addToName + fileName, outInBytes)
 }

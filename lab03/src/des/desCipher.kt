@@ -7,15 +7,15 @@ fun prepareWorkBlocks(bytes: List<UByte>, mode: String): List<ULong>
 
     if (mode == "cipher")
     {
-        val addedZeroes: Byte = if (workBytes.size >= 8)
-            (8 - workBytes.size % 8).toByte()
+        val addedZeroes: UByte = if (workBytes.size >= 8)
+            (8 - workBytes.size % 8).toUByte()
         else
-            (8 - workBytes.size).toByte()
-        for (i in 0 until addedZeroes)//+ 7) вернуть
+            (8 - workBytes.size).toUByte()
+        for (i in 0 until addedZeroes.toInt() + 7)
         {
             workBytes.add(0u)
         }
-//        workBytes.add(addedZeroes) ВЕРНУТЬ ПОСЛЕ ДЕБАГА
+        workBytes.add(addedZeroes)
     }
 
     val outBlocks = MutableList<ULong>(workBytes.size / 8) { _ -> 0u }
