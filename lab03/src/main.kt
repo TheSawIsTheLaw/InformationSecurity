@@ -1,21 +1,22 @@
 import des.cipherOrDecipher
 import fileOperations.createBinary
 import fileOperations.getBinaryFilling
-import java.nio.ByteBuffer
 
 const val addToName: String = "wololo"
 
-fun longToUInt32ByteArray(value: Long): ByteArray
+@OptIn(ExperimentalUnsignedTypes::class) fun uLongToByteArray(value: ULong): UByteArray
 {
-    val bytes = ByteArray(4)
-    bytes[3] = (value and 0xFFFF).toByte()
-    bytes[2] = ((value ushr 8) and 0xFFFF).toByte()
-    bytes[1] = ((value ushr 16) and 0xFFFF).toByte()
-    bytes[0] = ((value ushr 24) and 0xFFFF).toByte()
+    val bytes = UByteArray(8)
+    var convertValue = value
+    for (i in 7 downTo 0)
+    {
+        bytes[i] = (convertValue and 0xFFFFu).toUByte()
+        convertValue = convertValue shr 8
+    }
     return bytes
 }
 
-fun main(args: Array<String>)
+@OptIn(ExperimentalUnsignedTypes::class) fun main(args: Array<String>)
 {
     if (args.size < 3 || args[1].length != 8)
     {
@@ -48,9 +49,9 @@ fun main(args: Array<String>)
     val outInBytes = mutableListOf<UByte>()
 
     out.forEach {
-        for (i in longToUInt32ByteArray(it.toLong()))
+        for (i in uLongToByteArray(it))
         {
-            outInBytes.add(i.toUByte())
+            outInBytes.add(i)
         }
     }
     println("Output: $outInBytes")

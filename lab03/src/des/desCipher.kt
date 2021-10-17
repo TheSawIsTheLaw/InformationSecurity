@@ -105,7 +105,7 @@ fun makePermutationWith(block: ULong, table: List<UByte>): ULong
     var newBlock: ULong = 0u
     for (i in 0 until 64)
     {
-        newBlock = newBlock or ((block shr (64u - table[i].toUInt()).toInt()) and 1u) shl (63 - i)
+        newBlock = newBlock or (((block shr (64 - table[i].toInt())) and 1u) shl (63 - i))
     }
     return newBlock
 }
