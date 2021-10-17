@@ -1,7 +1,7 @@
 package des
 
 // Add zeroes until 64 bits and add a number of added bytes
-fun prepareWorkBlocks(bytes: List<Byte>, mode: String): List<Long>
+fun prepareWorkBlocks(bytes: List<UByte>, mode: String): List<ULong>
 {
     val workBytes = bytes.toMutableList()
 
@@ -11,21 +11,21 @@ fun prepareWorkBlocks(bytes: List<Byte>, mode: String): List<Long>
             (8 - workBytes.size % 8).toByte()
         else
             (8 - workBytes.size).toByte()
-        for (i in 0 until addedZeroes + 7)
+        for (i in 0 until addedZeroes)//+ 7) вернуть
         {
-            workBytes.add(0)
+            workBytes.add(0u)
         }
-        workBytes.add(addedZeroes)
+//        workBytes.add(addedZeroes) ВЕРНУТЬ ПОСЛЕ ДЕБАГА
     }
 
-    val outBlocks = MutableList<Long>(workBytes.size / 8) { _ -> 0 }
+    val outBlocks = MutableList<ULong>(workBytes.size / 8) { _ -> 0u }
 
     // God, save me from my cycles...
     var curBlockNum = 0
     var passedBytes = 0
     for (i in workBytes.indices)
     {
-        outBlocks[curBlockNum] = (outBlocks[curBlockNum] shl 8) or workBytes[i].toLong()
+        outBlocks[curBlockNum] = (outBlocks[curBlockNum] shl 8) or workBytes[i].toULong()
         passedBytes++
         if (passedBytes == 8)
         {
@@ -37,28 +37,14 @@ fun prepareWorkBlocks(bytes: List<Byte>, mode: String): List<Long>
     return outBlocks
 }
 
-fun makeBlocksToOneList(byteBlocks: List<List<Byte>>): List<Byte>
+fun formKeys(fKey: UInt, sKey: UInt): List<ULong>
 {
-    val outList = mutableListOf<Byte>()
-    for (block in byteBlocks)
-    {
-        for (byte in block)
-        {
-            outList.add(byte)
-        }
-    }
-
-    return outList
-}
-
-fun formKeys(fKey: Int, sKey: Int): List<Long>
-{
-    val keys48bit = MutableList<Long>(16) { _ -> 0 } // In Long we have 64 bits
+    val keys48bit = MutableList<ULong>(16) { _ -> 0u } // In Long we have 64 bits
 
     var currentShift: Int
 
-    var curFKey: Int = fKey
-    var curSKey: Int = sKey
+    var curFKey = fKey
+    var curSKey = sKey
 
     for (i in 0 until 16)
     {
@@ -68,16 +54,25 @@ fun formKeys(fKey: Int, sKey: Int): List<Long>
             else        -> 2
         }
 
-        curFKey = ((curFKey shl currentShift) or (curFKey shr (-currentShift and 27))) and ((1 shl 32) - 1)
-        curSKey = ((curSKey shl currentShift) or (curSKey shr (-currentShift and 27))) and ((1 shl 32) - 1)
+////        println()
+//        println("До curFKey $curFKey curSKey $curSKey")
+//        println(((1.toULong() shl 32) - 1u).toString(2))
+//        println(((curSKey.toULong() shl currentShift) or (curSKey.toULong() shr (-currentShift and 27))).toString(2))
+        curFKey =
+            (((curFKey.toULong() shl currentShift) or (curFKey.toULong() shr (-currentShift and 27))) and ((1.toULong() shl 32) - 1u)).toUInt()
+        curSKey =
+            (((curSKey.toULong() shl currentShift) or (curSKey.toULong() shr (-currentShift and 27))) and ((1.toULong() shl 32) - 1u)).toUInt()
+//        println("После curFKey $curFKey curSKey $curSKey")
 
-        val key56bit: Long = ((curFKey.toLong() shl 28) or curSKey.toLong()) shl 4
+
+        val key56bit: ULong = (((curFKey.toULong() shr 4) shl 32) or curSKey.toULong()) shl 4
+//        println("Key: $key56bit")
 
         // compress
-        var curKey48bit: Long = 0
+        var curKey48bit: ULong = 0u
         for (j in 0 until 48)
         {
-            curKey48bit = curKey48bit or ((key56bit shr (64 - DESTables.compressTable[j]) and 0x01) shl (63 - j))
+            curKey48bit = curKey48bit or (((key56bit shr (64 - DESTables.compressTable[j].toInt())) and 1u) shl (63 - j))
         }
         keys48bit[i] = curKey48bit
     }
@@ -85,7 +80,7 @@ fun formKeys(fKey: Int, sKey: Int): List<Long>
     return keys48bit
 }
 
-fun expandKey(key: List<Byte>): List<Long>
+fun expandKey(key: List<UByte>): List<ULong>
 {
     var key64bit: Long = 0
     for (i in key.indices)
@@ -93,71 +88,71 @@ fun expandKey(key: List<Byte>): List<Long>
         key64bit = (key64bit shl 8) or key[i].toLong()
     }
 
-    var fKey: Int = 0
-    var sKey: Int = 0
+    var fKey: UInt = 0u
+    var sKey: UInt = 0u
 
     for (i in 0 until 28)
     {
-        fKey = fKey or (((key64bit shr (64 - DESTables.k1PTable[i]) and 0x01) shl (31 - i))).toInt()
-        sKey = sKey or (((key64bit shr (64 - DESTables.k2PTable[i]) and 0x01) shl (31 - i))).toInt()
+        fKey = fKey or (((key64bit shr (64 - DESTables.k1PTable[i].toInt()) and 0x01) shl (31 - i))).toUInt()
+        sKey = sKey or (((key64bit shr (64 - DESTables.k2PTable[i].toInt()) and 0x01) shl (31 - i))).toUInt()
     }
 
     return formKeys(fKey, sKey)
 }
 
-fun makePermutationWith(block: Long, table: List<Byte>): Long
+fun makePermutationWith(block: ULong, table: List<UByte>): ULong
 {
-    var newBlock: Long = 0
+    var newBlock: ULong = 0u
     for (i in 0 until 64)
     {
-        newBlock = newBlock or ((block shr (64 - table[i])) and 0x01) shl (63 - i)
+        newBlock = newBlock or ((block shr (64u - table[i].toUInt()).toInt()) and 1u) shl (63 - i)
     }
     return newBlock
 }
 
-fun makeInitialPermutationAndDivide(block: Long): Pair<Int, Int>
+fun makeInitialPermutationAndDivide(block: ULong): Pair<UInt, UInt>
 {
     val newBlock = makePermutationWith(block, DESTables.ipTable)
 
-    return Pair((newBlock shr 32).toInt(), newBlock.toInt())
+    return Pair((newBlock shr 32).toUInt(), newBlock.toUInt())
 }
 
-fun makeFinalPermutationAndMakeBlock(left: Int, right: Int): Long =
-    makePermutationWith((left.toLong() shl 32) or right.toLong(), DESTables.fpTable)
+fun makeFinalPermutationAndMakeBlock(left: UInt, right: UInt): ULong =
+    makePermutationWith((left.toULong() shl 32) or right.toULong(), DESTables.fpTable)
 
-fun expandTo48bit(block: Int): Long
+fun expandTo48bit(block: UInt): ULong
 {
-    var newBlock: Long = 0
+    var newBlock: ULong = 0u
     for (i in 0 until 48)
     {
-        newBlock = newBlock or ((((block shr (32 - DESTables.epTable[i])) and 0x01)).toLong() shl (63 - i))
+        newBlock = newBlock or ((((block shr (32 - DESTables.epTable[i].toInt())) and 1u)).toULong() shl (63 - i))
     }
 
     return newBlock
 }
 
-fun lrBits(block6bit: Byte): Byte
+fun lrBits(block6bit: UByte): UByte
 {
-    return (((block6bit.toInt() shr 6) and 0x2) or ((block6bit.toInt() shr 2) and 0x1)).toByte()
+    return (((block6bit.toUInt() shr 6) and 2u) or ((block6bit.toUInt() shr 2) and 1u)).toUByte()
 }
 
-fun middleBits(block6bit: Byte): Byte
+fun middleBits(block6bit: UByte): UByte
 {
-    return ((block6bit.toInt() shr 3) and 0xF).toByte()
+    return ((block6bit.toUInt() shr 3) and 0xFu).toUByte()
 }
 
-fun substitutions(block: Long): Int
+fun substitutions(block: ULong): UInt
 {
-    val subBlocks6bit = MutableList<Byte>(8) { _ -> 0 }
-    val outBlocks4bit = MutableList<Byte>(4) { _ -> 0 }
+    val subBlocks6bit = MutableList<UByte>(8) { 0u }
+    val outBlocks4bit = MutableList<UByte>(4) { 0u }
 
     for (i in 0 until 8)
     {
-        subBlocks6bit[i] = ((block shr (58 - (i * 6))) shl 2).toByte()
+        subBlocks6bit[i] = ((block shr (58 - (i * 6))) shl 2).toUByte()
     }
 
-    var block2Bit: Byte
-    var block4Bit: Byte
+    var block2Bit: UByte
+    var block4Bit: UByte
     var j = 0
     for (i in 0 until 8 step 2)
     {
@@ -168,34 +163,34 @@ fun substitutions(block: Long): Int
         block2Bit = lrBits(subBlocks6bit[i + 1])
         block4Bit = middleBits(subBlocks6bit[i + 1])
         outBlocks4bit[j] =
-            ((outBlocks4bit[j].toInt() shl 4) or DESTables.sBox[i + 1][block2Bit.toInt()][block4Bit.toInt()].toInt()).toByte()
+            ((outBlocks4bit[j].toUInt() shl 4) or DESTables.sBox[i + 1][block2Bit.toInt()][block4Bit.toInt()].toUInt()).toUByte()
 
         j++
     }
 
-    var outVal: Int = 0
+    var outVal: UInt = 0u
     for (i in outBlocks4bit.indices)
     {
-        outVal = (outVal shl 8) or outBlocks4bit[i].toInt()
+        outVal = (outVal shl 8) or outBlocks4bit[i].toUInt()
     }
 
     return outVal
 }
 
-fun feistelFunc(blockPart: Int, key48bit: Long): Int
+fun feistelFunc(blockPart: UInt, key48bit: ULong): UInt
 {
     val blockExpandedTo48bit = expandTo48bit(blockPart) xor key48bit
 
-    val newBlock32: Int = substitutions(blockExpandedTo48bit)
-    var permutedBlock32: Int = 0
+    val newBlock32: UInt = substitutions(blockExpandedTo48bit)
+    var permutedBlock32: UInt = 0u
     for (i in 0 until 32)
     {
-        permutedBlock32 = permutedBlock32 or (((newBlock32 shr (32 - DESTables.permTable[i])) and 0x01) shl (31 - i))
+        permutedBlock32 = permutedBlock32 or (((newBlock32 shr ((32u - DESTables.permTable[i].toUInt()).toInt())) and 1u) shl (31 - i))
     }
     return permutedBlock32
 }
 
-fun feistelCipher(leftPart: Int, rightPart: Int, keys: List<Long>): Pair<Int, Int>
+fun feistelCipher(leftPart: UInt, rightPart: UInt, keys: List<ULong>): Pair<UInt, UInt>
 {
     var left = leftPart
     var right = rightPart
@@ -207,7 +202,7 @@ fun feistelCipher(leftPart: Int, rightPart: Int, keys: List<Long>): Pair<Int, In
     return Pair(right, left)
 }
 
-fun feistelDecipher(leftPart: Int, rightPart: Int, keys: List<Long>): Pair<Int, Int>
+fun feistelDecipher(leftPart: UInt, rightPart: UInt, keys: List<ULong>): Pair<UInt, UInt>
 {
     var left = leftPart
     var right = rightPart
@@ -219,7 +214,7 @@ fun feistelDecipher(leftPart: Int, rightPart: Int, keys: List<Long>): Pair<Int, 
     return Pair(right, left)
 }
 
-fun cipherOrDecipher(bytesToCipher: List<Byte>, key: List<Byte>, mode: String = "cipher"): List<Long>
+fun cipherOrDecipher(bytesToCipher: List<UByte>, key: List<UByte>, mode: String = "cipher"): List<ULong>
 {
     if (key.size != 8)
     {
@@ -230,7 +225,7 @@ fun cipherOrDecipher(bytesToCipher: List<Byte>, key: List<Byte>, mode: String = 
 
     val keys48bit = expandKey(key)
 
-    val outBlocks = mutableListOf<Long>()
+    val outBlocks = mutableListOf<ULong>()
     for (block in workBlocks)
     {
         val (curLeft, curRight) = makeInitialPermutationAndDivide(block)
