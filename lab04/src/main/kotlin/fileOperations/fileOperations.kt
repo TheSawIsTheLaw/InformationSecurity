@@ -5,15 +5,8 @@ import java.io.DataOutputStream
 import java.io.File
 import java.io.FileNotFoundException
 
-
-fun getBinaryFilling(fileName: String): List<ULong> {
-    val stream: DataInputStream
-    try {
-        stream = DataInputStream(File(fileName).inputStream())
-    } catch (exception: FileNotFoundException) {
-        println("File not found")
-        return listOf()
-    }
+fun getBinaryFillingForCipher(fileName: String): List<ULong> {
+    val stream = DataInputStream(File(fileName).inputStream())
 
     val outList = mutableListOf<ULong>()
     while (stream.available() > 0) {
@@ -32,18 +25,11 @@ fun getBinaryFilling(fileName: String): List<ULong> {
 //    outList.add(lastLongToAdd)
 //    outList.add(lastBytesNumber.toULong())
 
-    println("Read from file: $outList")
     return outList.toList()
 }
 
-fun getBinaryFillingCiphered(fileName: String): List<ULong> {
-    val stream: DataInputStream
-    try {
-        stream = DataInputStream(File(fileName).inputStream())
-    } catch (exception: FileNotFoundException) {
-        println("File not found")
-        return listOf()
-    }
+fun getBinaryFillingForDecipher(fileName: String): List<ULong> {
+    val stream = DataInputStream(File(fileName).inputStream())
 
     val outList = mutableListOf<ULong>()
     while (stream.available() > 0) {
@@ -62,14 +48,19 @@ fun getBinaryFillingCiphered(fileName: String): List<ULong> {
 //    outList.add(lastLongToAdd)
 //    outList.add(lastBytesNumber.toULong())
 
-    println("Read from file: $outList")
     return outList.toList()
 }
 
-//<!!!> There last long is for needed last bytes
+fun writeToFile(fileName: String, bytes: List<Byte>)
+{
+    val outputFile = File(fileName)
+    outputFile.createNewFile()
+
+    DataOutputStream(outputFile.outputStream()).write(bytes.toByteArray())
+}
+
 @OptIn(ExperimentalUnsignedTypes::class)
-fun createBinary(fileName: String, data: List<ULong>): Boolean {
-    println("Got in create binary: $data")
+fun createBinaryCiphered(fileName: String, data: List<ULong>) {
     val bytes = mutableListOf<Byte>()
     for (currentLongIndex in 0 until (data.size - 1)) {
         val currentLong = data[currentLongIndex]
@@ -84,30 +75,14 @@ fun createBinary(fileName: String, data: List<ULong>): Boolean {
 //    for (i in 0 until numberOfLastBytes.toInt()) {
 //        bytes.add((numberToProcess shr (Byte.SIZE_BITS * i)).toByte())
 //    }
-
-    println("Ok, creating file $fileName")
-    println(bytes)
-    val stream: DataOutputStream
-    try {
-        val outputFile = File(fileName)
-        outputFile.createNewFile()
-        stream = DataOutputStream(outputFile.outputStream())
-    } catch (exception: Exception) {
-        println("Error while creating file")
-        return false
-    }
-
-    stream.write(bytes.toByteArray())
-    return true
+    writeToFile(fileName, bytes)
 }
 
 @OptIn(ExperimentalUnsignedTypes::class)
-fun createBinaryDeciphered(fileName: String, data: List<ULong>): Boolean {
+fun createBinaryDeciphered(fileName: String, data: List<ULong>) {
     val bytes = mutableListOf<Byte>()
-    for (currentLongIndex in data.indices) {
-        println("Added byte: ${data[currentLongIndex].toByte()}")
+    for (currentLongIndex in data.indices)
         bytes.add(data[currentLongIndex].toByte())
-    }
 
 //    // Add last bytes
 //    val numberOfLastBytes = data.last()
@@ -115,17 +90,5 @@ fun createBinaryDeciphered(fileName: String, data: List<ULong>): Boolean {
 //    for (i in 0 until numberOfLastBytes.toInt()) {
 //        bytes.add((numberToProcess shr (Byte.SIZE_BITS * i)).toByte())
 //    }
-
-    val stream: DataOutputStream
-    try {
-        val outputFile = File(fileName)
-        outputFile.createNewFile()
-        stream = DataOutputStream(outputFile.outputStream())
-    } catch (exception: Exception) {
-        println("Error while creating file")
-        return false
-    }
-
-    stream.write(bytes.toByteArray())
-    return true
+    writeToFile(fileName, bytes)
 }

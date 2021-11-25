@@ -1,7 +1,4 @@
-import fileOperations.createBinary
-import fileOperations.createBinaryDeciphered
-import fileOperations.getBinaryFilling
-import fileOperations.getBinaryFillingCiphered
+import fileOperations.*
 import rsa.RSA
 import kotlin.reflect.KFunction
 
@@ -32,18 +29,18 @@ fun main(args: Array<String>) {
     val functionToGetBinaryFilling: KFunction<List<ULong>>
     val functionToUseDecOrC: KFunction<List<ULong>>
     val extendedName: String
-    val functionToCreateBinary: KFunction<Boolean>
+    val functionToCreateBinary: KFunction<Unit>
 
     if (mode == "dec") {
-        functionToGetBinaryFilling = ::getBinaryFillingCiphered
-        functionToUseDecOrC = rsaMachine::decrypt
         extendedName = "Deciphered."
+        functionToGetBinaryFilling = ::getBinaryFillingForDecipher
+        functionToUseDecOrC = rsaMachine::decrypt
         functionToCreateBinary = ::createBinaryDeciphered
     } else {
-        functionToGetBinaryFilling = ::getBinaryFilling
-        functionToUseDecOrC = rsaMachine::encrypt
         extendedName = "Ciphered."
-        functionToCreateBinary = ::createBinary
+        functionToGetBinaryFilling = ::getBinaryFillingForCipher
+        functionToUseDecOrC = rsaMachine::encrypt
+        functionToCreateBinary = ::createBinaryCiphered
     }
 
     val filling = functionToGetBinaryFilling(fileName)

@@ -13,7 +13,6 @@ class RSA(private val pNumber: ULong = 17uL, private val qNumber: ULong = 19uL) 
     val privateKey = Pair(generatePrivateKeyDNumber(), nModule)
 
     init {
-        println("${privateKey.first} * ${publicKey.first} mod $phiEuler == 1")
         println("Formed keys: $publicKey (public), $privateKey (private)")
     }
 
@@ -26,7 +25,6 @@ class RSA(private val pNumber: ULong = 17uL, private val qNumber: ULong = 19uL) 
             else
                 sNum -= fNum
         }
-        println("For $fNum_ and $sNum_ GCD is $fNum")
 
         return fNum
     }
@@ -45,32 +43,26 @@ class RSA(private val pNumber: ULong = 17uL, private val qNumber: ULong = 19uL) 
     }
 
     // Returns number n from (n * fNumber) mod sNumber == 1
-    private fun inverseByExtendedEuclideanAlgorithm(fNumber: ULong, sNumber: ULong): ULong {
+    private fun inverseByExtendedEuclideanAlgorithm(cofactor: ULong, modNumber: ULong): ULong {
         var outT = 0L
-        var currentR = sNumber.toLong()
+        var currentR = modNumber.toLong()
 
         var newT = 1L
-        var newR = fNumber.toLong()
+        var newR = cofactor.toLong()
 
         var quotient: Long
-        var temp: Long
         while (newR != 0L) {
             quotient = currentR / newR
 
-            temp = newT
-            newT = outT - quotient * newT
-            outT = temp
-
-            temp = newR
-            newR = currentR - quotient * newR
-            currentR = temp
+            newT = (outT - quotient * newT).also { outT = newT }
+            newR = (currentR - quotient * newR).also { currentR = newR }
         }
 
         if (currentR > 1L)
             throw Exception("No such inverse value")
 
         if (outT < 0)
-            outT += sNumber.toLong()
+            outT += modNumber.toLong()
 
         return outT.toULong()
 
