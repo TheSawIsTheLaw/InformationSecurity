@@ -3,7 +3,7 @@ package rsa
 import java.math.BigInteger
 import kotlin.random.*
 
-class RSA(private val pNumber: ULong = 293uL, private val qNumber: ULong = 263uL) {
+class RSA(private val pNumber: ULong = 17uL, private val qNumber: ULong = 19uL) {
     private val nModule = pNumber * qNumber
     private val phiEuler = (pNumber - 1uL) * (qNumber - 1uL)
 
@@ -98,7 +98,6 @@ class RSA(private val pNumber: ULong = 293uL, private val qNumber: ULong = 263uL
     private fun powULong(num: Long, degree: ULong): BigInteger {
         var outValue: BigInteger = BigInteger.valueOf(1)
 
-        println("Pows $num ^ $degree")
         for (i in 0uL until degree) {
             outValue *= BigInteger.valueOf(num)
 //            println(outValue)
@@ -110,10 +109,16 @@ class RSA(private val pNumber: ULong = 293uL, private val qNumber: ULong = 263uL
     // Ловим переполнение, надо исправлять размеры блоков
     // Наверное, переделываем на шорт блоки, а работаем дальше с лонгами.
     private fun encryptULong(numberToEncrypt: ULong): ULong =
-        (powULong(numberToEncrypt.toLong(), publicKey.first).mod(BigInteger.valueOf(publicKey.second.toLong()))).toLong().toULong()
+        (powULong(
+            numberToEncrypt.toLong(),
+            publicKey.first
+        ).mod(BigInteger.valueOf(publicKey.second.toLong()))).toLong().toULong()
 
     private fun decryptULong(numberToDecrypt: ULong): ULong =
-        (powULong(numberToDecrypt.toLong(), privateKey.first).mod(BigInteger.valueOf(privateKey.second.toLong()))).toLong().toULong()
+        (powULong(
+            numberToDecrypt.toLong(),
+            privateKey.first
+        ).mod(BigInteger.valueOf(privateKey.second.toLong()))).toLong().toULong()
 
     fun encrypt(listToEncrypt: List<ULong>): List<ULong> {
         val outList = mutableListOf<ULong>()
