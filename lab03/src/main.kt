@@ -4,7 +4,8 @@ import fileOperations.getBinaryFilling
 
 const val addToName: String = "wololo"
 
-@OptIn(ExperimentalUnsignedTypes::class) fun uLongToByteArray(value: ULong): UByteArray
+@OptIn(ExperimentalUnsignedTypes::class)
+fun uLongToByteArray(value: ULong): UByteArray
 {
     val bytes = UByteArray(8)
     var convertValue = value
@@ -29,7 +30,8 @@ fun deleteLastZeroes(deleteFrom: List<UByte>): MutableList<UByte>
     return fixedList
 }
 
-@OptIn(ExperimentalUnsignedTypes::class) fun main(args: Array<String>)
+@OptIn(ExperimentalUnsignedTypes::class)
+fun main(args: Array<String>)
 {
     if (args.size < 3 || args[1].length != 8)
     {
