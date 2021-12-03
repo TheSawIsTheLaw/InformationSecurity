@@ -21,17 +21,13 @@ object KeyHelper {
     }
 }
 
-fun getEncodedKey(keyFile: File): ByteArray {
-    return keyFile.readBytes()
-}
-
 fun getPublicKey(): PublicKey {
-    val encodedPublic = getEncodedKey(File(publicKeyFilename))
+    val encodedPublic = File(publicKeyFilename).readBytes()
     return KeyHelper.getPublicKey(encodedPublic)
 }
 
 fun getPrivateKey(): PrivateKey {
-    val encodedPrivate = getEncodedKey(File(privateKeyFilename))
+    val encodedPrivate = File(privateKeyFilename).readBytes()
     return KeyHelper.getPrivateKey(encodedPrivate)
 }
 
